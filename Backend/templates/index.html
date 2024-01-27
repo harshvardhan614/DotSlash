@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Recorder</title>
+</head>
+<body>
+  <h1>Audio Recorder</h1>
+  <button id="startRecording">Start Recording</button>
+  <button id="stopRecording" disabled>Stop Recording</button>
+  <audio id="audioPlayer" controls></audio>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      let mediaRecorder;
+      let audioChunks = [];
+
+      const startRecordingButton = document.getElementById('startRecording');
+      const stopRecordingButton = document.getElementById('stopRecording');
+      const audioPlayer = document.getElementById('audioPlayer');
+
+      startRecordingButton.addEventListener('click', startRecording);
+      stopRecordingButton.addEventListener('click', stopRecording);
+
+      function startRecording() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then((stream) => {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = handleDataAvailable;
+            mediaRecorder.onstop = handleStop;
+
+            startRecordingButton.disabled = true;
+            stopRecordingButton.disabled = false;
+
+            mediaRecorder.start();
+          })
+          .catch((error) => {
+            console.error('Error accessing microphone:', error);
+          });
+      }
+
+      function handleDataAvailable(event) {
+        if (event.data.size > 0) {
+          audioChunks.push(event.data);
+        }
+      }
+
+      function stopRecording() {
+        mediaRecorder.stop();
+        startRecordingButton.disabled = false;
+        stopRecordingButton.disabled = true;
+      }
+
+      function handleStop() {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        audioChunks = [];
+
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.wav');
+        console.log(formData);
+        fetch('/transcribe', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Audio uploaded successfully:', data);
+          audioPlayer.src = data.url; // Assuming the server responds with the URL of the uploaded audio file
+        })
+        .catch(error => {
+          console.error('Error uploading audio:', error);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
