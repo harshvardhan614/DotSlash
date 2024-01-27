@@ -7,7 +7,6 @@ from io import BytesIO
 #import soundfile as sf
 import subprocess
 
-import moviepy.editor as moviepy
 
 def convert_webm_to_wav(input_file, output_file):
     clip = moviepy.VideoFileClip(input_file,)
@@ -110,7 +109,7 @@ def ap():
     speech_key, service_region = "bd6062c60f3c4b30bb5ec451a5439d1a", "eastus"
     speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
 
-    audio_config = speechsdk.audio.AudioConfig(filename='uploads/out.wav')
+    audio_config = speechsdk.audio.AudioConfig(filename='uploads/recording.webm')
     speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
     result = speech_recognizer.recognize_once()
     print(result.text)
