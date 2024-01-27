@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, jsonify
 import speech_recognition as sr
 from datetime import datetime
 import random
-
+import os
 
 app = Flask(__name__)
 
@@ -35,7 +35,7 @@ def transcribe():
     # audio_data = audio_file.filename()
     print(audio_file)
 
-    audio_filename = random.randint(1000, 999999+ audio_file.filename)
+    audio_filename = str(random.randint(1000, 999999))+ audio_file.filename
 
     # audio_file.save('uploads/' + audio_file.filename)
     print("uploads/" + audio_filename)
@@ -54,6 +54,7 @@ def transcribe():
         text_recognition = recognizer.recognize_azure(
             audio, key="ba8f1c341b5b45c58ac0253ee5be5342", location="eastus"
         )
+        os.remove('uploads/' + audio_filename)
         return jsonify(
             {"transcript": text_recognition[0], "confidence": text_recognition[1]}
         )
@@ -69,7 +70,8 @@ def transcribe():
             }
         )
     
-        """
+    
+    """
     try:
         # Perform speech recognition
         transcript = recognizer.recognize_google(audio, language='en-US')
