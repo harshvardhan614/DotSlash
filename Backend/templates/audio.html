@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text-to-Speech Example</title>
+</head>
+<body>
+
+    <h1>Text-to-Speech Example</h1>
+
+    <textarea id="textToSpeak" rows="4" cols="50">Hello, this is a text-to-speech example in JavaScript.</textarea>
+    <br>
+    <button onclick="speak()">Speak</button>
+
+    <script>
+        function speak() {
+            const textToSpeak = document.getElementById('textToSpeak').value;
+
+            if ('speechSynthesis' in window) {
+                const synth = window.speechSynthesis;
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+
+                // Uncomment the next line to set the voice (optional)
+                // utterance.voice = speechSynthesis.getVoices()[0];
+                
+                // Set the volume
+                // 0 to 1
+                utterance.volume = 1.5;
+
+
+                synth.speak(utterance);
+            } else {
+                alert('Text-to-speech is not supported in this browser.');
+            }
+        }
+    </script>
+
+</body>
+</html>
