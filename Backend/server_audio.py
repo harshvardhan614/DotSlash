@@ -85,6 +85,11 @@ def transcribe():
 def video_main():
     return render_template("video_snap.html")
 
+@app.route("/video_audio")
+def video_audio_main():
+    return render_template("audio_video.html")
+
+
 @app.route('/snapshot', methods=['POST'])
 def snapshot():
     snapshot_file = request.files['snapshot']
