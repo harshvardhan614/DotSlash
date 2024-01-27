@@ -1,51 +1,64 @@
-<style>
-  .speech {
-    border: 1px solid #ddd;
-    width: 300px;
-    padding: 0;
-    margin: 0;
-  }
-  .speech input {
-    border: 0;
-    width: 240px;
-    display: inline-block;
-    height: 30px;
-  }
-  .speech img {
-    float: right;
-    width: 40px;
-  }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speech to Text</title>
+</head>
+<body>
+  <h1>Speech to Text</h1>
+  <button id="startButton">Start Speech Recognition</button>
+  <p id="output"></p>
 
-<!-- Search Form -->
-<form id="labnol" method="get" action="https://www.google.com/search">
-  <div class="speech">
-    <input type="text" name="q" id="transcript" placeholder="Speak" />
-    <img onclick="startDictation()" src="//i.imgur.com/cHidSVu.gif" />
-  </div>
-</form>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const startButton = document.getElementById('startButton');
+      const output = document.getElementById('output');
+      let recognition;
 
-<!-- HTML5 Speech Recognition API -->
-<script>
-  function startDictation() {
-    if (window.hasOwnProperty('webkitSpeechRecognition')) {
-      var recognition = new webkitSpeechRecognition();
+      if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
 
-      recognition.continuous = false;
-      recognition.interimResults = false;
+        recognition.continuous = true;
+        recognition.interimResults = true;
 
-      recognition.lang = 'en-US';
-      recognition.start();
+        recognition.onstart = function() {
+          output.textContent = 'Listening...';
+        };
 
-      recognition.onresult = function (e) {
-        document.getElementById('transcript').value = e.results[0][0].transcript;
-        recognition.stop();
-        document.getElementById('labnol').submit();
-      };
+        recognition.onerror = function(event) {
+          output.textContent = 'Error occurred: ' + event.error;
+        };
 
-      recognition.onerror = function (e) {
-        recognition.stop();
-      };
-    }
-  }
-</script>
+        recognition.onresult = function(event) {
+          let interimTranscript = '';
+          let finalTranscript = '';
+
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript + ' ';
+            } else {
+              interimTranscript += transcript;
+            }
+            console.log(transcript);
+          }
+
+          output.innerHTML = '<p>Interim:</p><p>' + interimTranscript + '</p><p>Final:</p><p>' + finalTranscript + '</p>';
+        };
+
+        recognition.onend = function() {
+          output.textContent += 'Speech recognition stopped.';
+        };
+
+        startButton.addEventListener('click', function() {
+          recognition.start();
+        });
+      } else {
+        output.textContent = 'Speech recognition is not supported in this browser.';
+      }
+    });
+  </script>
+</body>
+</html>
