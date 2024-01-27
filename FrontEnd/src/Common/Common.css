@@ -12,7 +12,7 @@
   }
   
   .logo img {
-    max-width: 120px;
+    max-width: 140px;
   }
   
   .nav-links {
@@ -54,7 +54,7 @@
         position: absolute;
         top: 50px;
         right: 10px;
-        background: linear-gradient(to top, #3498dbce, #297fb9ee);      
+        background: white; 
         width: 180px;      
         padding: 40px ;
         border-radius: 3px;
@@ -63,7 +63,7 @@
       }
 
       .nav-links a{
-        color: #fff;
+        color: linear-gradient(to top, #3498dbce, #297fb9ee);   
       }
     
       .nav-links.active {

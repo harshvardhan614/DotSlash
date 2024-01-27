@@ -15,7 +15,7 @@ const Navbar = () => {
   };
   return (
     <div className="navColor">
-      <nav className="navbar container">
+      <nav className="navbar myContainer">
         <div className="logo">
           <img src={logo} alt="Logo" />
         </div>
@@ -23,12 +23,9 @@ const Navbar = () => {
           <Link to="/" onClick={closeMobileMenu}>
             Home
           </Link>
-          <Link to="/about" onClick={closeMobileMenu}>
-            About Us
-          </Link>
-          <Link to="/product" onClick={closeMobileMenu}>
-            Product
-          </Link>
+          <Link to="/interview" onClick={closeMobileMenu}>
+            Interview
+          </Link>         
           <Link to="/contact" onClick={closeMobileMenu}>
             Contact Us
           </Link>

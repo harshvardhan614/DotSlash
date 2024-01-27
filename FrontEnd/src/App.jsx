@@ -3,6 +3,7 @@ import Navbar from './Common/Navbar';
 import {
   BrowserRouter as Router, 
 } from "react-router-dom";
+import Home from './pages/Home';
 
 function App() {
 
@@ -10,6 +11,7 @@ function App() {
     <>     
     <Router>
     <Navbar/>
+    <Home/>
     </Router>
     
     </>
