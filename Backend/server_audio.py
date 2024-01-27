@@ -81,6 +81,20 @@ def transcribe():
     except sr.RequestError as e:
         return jsonify({'error': f'Speech recognition request failed: {e}'})
     """
+@app.route("/video")
+def video_main():
+    return render_template("video_snap.html")
+
+@app.route('/snapshot', methods=['POST'])
+def snapshot():
+    snapshot_file = request.files['snapshot']
+
+    # Save the snapshot to a file or process it as needed
+    # For now, just print some information
+    print('Received snapshot:', snapshot_file.filename)
+    snapshot_file.save('uploads/images/received_snapshot.png')
+
+    return jsonify({'message': 'Snapshot received successfully'})
 
 
 if __name__ == "__main__":

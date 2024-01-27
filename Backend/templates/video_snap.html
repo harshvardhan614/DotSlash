@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam Snapshot</title>
+    <style>
+        #video-container {
+            width: 100%;
+            text-align: center;
+        }
+        #video {
+            width: 100%;
+            max-width: 640px;
+            margin: 20px auto;
+        }
+        #snapshot-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="video-container">
+        <video id="video" playsinline autoplay></video>
+        <button id="snapshot-btn">Take Snapshot</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const video = document.getElementById('video');
+            const snapshotBtn = document.getElementById('snapshot-btn');
+
+            // Get user media
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((stream) => {
+                    video.srcObject = stream;
+                })
+                .catch((error) => {
+                    console.error('Error accessing webcam:', error);
+                });
+
+            // Capture snapshot on button click
+            snapshotBtn.addEventListener('click', () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                canvas.toBlob((blob) => {
+                    const formData = new FormData();
+                    formData.append('snapshot', blob, 'snapshot.png');
+
+                    // Send snapshot to backend using FormData
+                    fetch('/snapshot', {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(response => response.json())
+                    .then(data => console.log(data))
+                    .catch(error => console.error('Error sending snapshot:', error));
+                }, 'image/png');
+            });
+        });
+    </script>
+</body>
+</html>
