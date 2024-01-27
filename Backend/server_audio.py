@@ -115,7 +115,7 @@ def ap():
     print(result.text)
     
 
-#ap()
+ap()
     
 if __name__ == '__main__':
     app.run(debug=True)
