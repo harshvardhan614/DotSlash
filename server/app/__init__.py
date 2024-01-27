@@ -5,6 +5,8 @@ from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 # from .models import Teacher, Student, Class_, Subject
 from bson import ObjectId
+from openai import OpenAI
+import os
 
 
 app = Flask(__name__)
@@ -32,7 +34,20 @@ try:
 except Exception as e:
     print(e)
 
+client = OpenAI()
 
-from .routes import *
+print(client)
+completion = client.chat.completions.create(
+  model="gpt-3.5-turbo",
+  messages=[
+    {"role": "system", "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."},
+    {"role": "user", "content": "Compose a poem that explains the concept of recursion in programming."}
+  ]
+)
+
+print(completion.choices[0].message)
+
+
+# from .routes import *
 
 
