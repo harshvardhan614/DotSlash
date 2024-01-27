@@ -62,7 +62,7 @@ def transcribe():
     audio_file.save('uploads/' + audio_file.filename)
     # Replace 'input.webm' and 'output.wav' with your input and output file paths
     
-    convert_webm_to_wav('uploads/' + audio_file.filename, 'uploads/recording_new.wav')
+    #convert_webm_to_wav('uploads/' + audio_file.filename, 'uploads/recording_new.wav')
 
     #convert_ogg_to_wav('uploads/' + audio_file.filename, 'uploads/' + audio_file.filename+'new')
 

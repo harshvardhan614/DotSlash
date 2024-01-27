@@ -118,6 +118,30 @@
 
             // our final blob
             blob = new Blob([view], { type: 'audio/wav' });
+            
+
+            // tep code
+        
+
+        const formData = new FormData();
+        formData.append('audio', blob, 'recording.webm');
+        //formData.append('audio', audioBlob, 'recording.ogg');
+
+
+       
+        console.log(formData);
+        fetch('/transcribe', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Audio uploaded successfully:', data);
+          audioPlayer.src = data.url; // Assuming the server responds with the URL of the uploaded audio file
+        })
+        .catch(error => {
+          console.error('Error uploading audio:', error);
+        });
         });
 
         playButton.addEventListener("click", function () {
