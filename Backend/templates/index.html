@@ -54,10 +54,13 @@
 
       function handleStop() {
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        //const audioBlob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
+  
         audioChunks = [];
 
         const formData = new FormData();
         formData.append('audio', audioBlob, 'recording.wav');
+        //formData.append('audio', audioBlob, 'recording.ogg');
         console.log(formData);
         fetch('/transcribe', {
           method: 'POST',
