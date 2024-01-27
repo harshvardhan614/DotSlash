@@ -1,114 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Audio Recorder</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text-to-Speech Example</title>
 </head>
 <body>
-  <h1>Audio Recorder</h1>
-  <button id="startRecording">Start Recording</button>
-  <button id="stopRecording" disabled>Stop Recording</button>
-  <audio id="audioPlayer" controls></audio>
 
-  <script>
-    let file;
-    document.addEventListener('DOMContentLoaded', () => {
-      let mediaRecorder;
-      let audioChunks = [];
+    <h1>Text-to-Speech Example</h1>
 
-      const startRecordingButton = document.getElementById('startRecording');
-      const stopRecordingButton = document.getElementById('stopRecording');
-      const audioPlayer = document.getElementById('audioPlayer');
+    <textarea id="textToSpeak" rows="4" cols="50">Hello, this is a text-to-speech example in JavaScript.</textarea>
+    <br>
+    <button onclick="speak()">Speak</button>
 
-      startRecordingButton.addEventListener('click', startRecording);
-      stopRecordingButton.addEventListener('click', stopRecording);
+    <script>
+        function speak() {
+            const textToSpeak = document.getElementById('textToSpeak').value;
 
-      function startRecording() {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-          .then((stream) => {
-            
-            //mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/wav'});
-            //mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/ogg' });
-            //mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-            mediaRecorder = new MediaRecorder(stream);
+            if ('speechSynthesis' in window) {
+                const synth = window.speechSynthesis;
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
 
-            mediaRecorder.ondataavailable = handleDataAvailable;
-            mediaRecorder.onstop = handleStop;
+                // Uncomment the next line to set the voice (optional)
+                // utterance.voice = speechSynthesis.getVoices()[0];
+                
+                // Set the volume
+                // 0 to 1
+                utterance.volume = 1.5;
 
-            startRecordingButton.disabled = true;
-            stopRecordingButton.disabled = false;
 
-            mediaRecorder.start();
-          })
-          .catch((error) => {
-            console.error('Error accessing microphone:', error);
-          });
-          audioChunks.length = 0;
-      }
-
-      function handleDataAvailable(event) {
-        if (event.data.size > 0) {
-          audioChunks.push(event.data);
+                synth.speak(utterance);
+            } else {
+                alert('Text-to-speech is not supported in this browser.');
+            }
         }
-      }
+    </script>
 
-      function stopRecording() {
-        mediaRecorder.stop();
-        startRecordingButton.disabled = false;
-        stopRecordingButton.disabled = true;
-      }
-
-      function handleStop() {
-        
-        
-        //const blob = new Blob(chunks, {type: chunks[0].type});
-        console.log( audioChunks[0].type);
-        console.log( audioChunks);
-        const audioBlob = new Blob(audioChunks, {type: audioChunks[0].type});
-        file = new File( [ audioChunks ], "yourfilename.webm", { type: "audio/webm"} );
-        
-        //const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        //const audioBlob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
-  
-        audioChunks = [];
-
-        const formData = new FormData();
-        formData.append('audio', audioBlob, 'recording.webm');
-        //formData.append('audio', audioBlob, 'recording.ogg');
-
-
-       
-        console.log(formData);
-        fetch('/transcribe', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Audio uploaded successfully:', data);
-          audioPlayer.src = data.url; // Assuming the server responds with the URL of the uploaded audio file
-        })
-        .catch(error => {
-          console.error('Error uploading audio:', error);
-        });
-      }
-    });
-
-    function getFileExtension(mimeType) {
-        switch (mimeType) {
-          case 'audio/wav':
-            return 'wav';
-          case 'audio/x-aiff':
-            return 'aiff';
-          case 'audio/flac':
-            return 'flac';
-          default:
-            return 'unknown';
-        }
-      }
-
-    
-  </script>
 </body>
 </html>
