@@ -26,7 +26,11 @@
       function startRecording() {
         navigator.mediaDevices.getUserMedia({ audio: true })
           .then((stream) => {
+            
+            //mediaRecorder = new MediaRecorder(stream, {mimeType: 'audio/wav'});
+            //mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/ogg' });
             mediaRecorder = new MediaRecorder(stream);
+
             mediaRecorder.ondataavailable = handleDataAvailable;
             mediaRecorder.onstop = handleStop;
 
@@ -53,7 +57,10 @@
       }
 
       function handleStop() {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        //const blob = new Blob(chunks, {type: chunks[0].type});
+        console.log( audioChunks[0].type);
+        const audioBlob = new Blob(audioChunks, {type: audioChunks[0].type});
+        //const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
         //const audioBlob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
   
         audioChunks = [];

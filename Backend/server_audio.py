@@ -1,6 +1,8 @@
 # app.py
 from flask import Flask, render_template, request, jsonify
 import speech_recognition as sr
+from pydub import AudioSegment
+
 
 app = Flask(__name__)
 
@@ -25,8 +27,9 @@ def transcribe():
     #audio_data = audio_file.filename()
     print(audio_file)
     audio_file.save('uploads/' + audio_file.filename)
+    convert_ogg_to_wav('uploads/' + audio_file.filename, 'uploads/' + audio_file.filename+'new')
     # Convert the audio data to an AudioFile object
-    with sr.AudioFile(audio_file) as source:
+    with sr.AudioFile('uploads/' + audio_file.filename+'new') as source:
         audio = recognizer.record(source)
 
     try:
@@ -37,6 +40,12 @@ def transcribe():
         return jsonify({'error': 'Could not understand audio'})
     except sr.RequestError as e:
         return jsonify({'error': f'Speech recognition request failed: {e}'})
+
+
+def convert_ogg_to_wav(ogg_file, wav_file):
+    audio = AudioSegment.from_ogg(ogg_file)
+    audio.export(wav_file, format="wav")
+
 
 if __name__ == '__main__':
     app.run(debug=True)
