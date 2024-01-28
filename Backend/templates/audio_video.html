@@ -112,11 +112,19 @@
 </head>
 <body>
     <h1>
-        Chatbot Interface {{context}}
+        AI Interview Interface
     </h1>
     <main>
         <div id="video-container">
             <video id="video" playsinline autoplay muted></video>
+
+            <div>
+                <centre>
+                    <br>
+                    <p style="display:inline-block;">Candidate Confidence :- </p>
+                    <b><span id="confidence-percent">0%</span></b>
+            </centre>
+            </div>
         </div>
         <!--div id="robot-image">
             <img src="robot-image.jpg" alt="Robot Image">
@@ -342,6 +350,7 @@
                         if(data['confidence'] != null || data['confidence'] != undefined){
                             if(interview_data[ques_index]){
                                 interview_data[ques_index]['video_confidence'].push(data.confidence);
+                                document.querySelectorAll('#confidence-percent')[0].innerHTML = data.confidence+'%';
                             }
                             
                         }
