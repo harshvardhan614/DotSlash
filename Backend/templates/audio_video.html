@@ -1,40 +1,147 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+
+
+        *{
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+            height:7rem;
+        }
+
+        h1 {
+            background-color: #3498db;
+            padding: 20px ;
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            width: 100%;
+
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 20px;
+            width: 100%;
+            max-width: 1200px;
+            height:100%;
+        }
+
+        #video-container {
+        
+            max-width: 500px;
+            width:50%;
+            margin:0px auto;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        #robot-image {
+            width: 200px;
+            height: 200px;
+            margin-top: 20px;
+        }
+
+        #chat-container {
+            width: 50%;
+            max-width: 500px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px auto 0;
+            box-sizing: border-box;
+        }
+
+        .question {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .answer {
+            margin-bottom: 20px;
+        }
+        .btns{
+            display:flex;
+            align-items:center;
+            justify-content:space-evenly;
+        }
+
+        .btns button{
+            padding:10px 15px;
+            margin:5px;
+            background:blue;
+            color:white;
+            outline:none;
+        }
+
+        @media only screen and (max-width: 768px) {
+            main {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #video-container, #chat-container {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Audio</h1>
+    <h1>
+        Chatbot Interface {{context}}
+    </h1>
+    <main>
+        <div id="video-container">
+            <video id="video" playsinline autoplay muted></video>
+        </div>
+        <!--div id="robot-image">
+            <img src="robot-image.jpg" alt="Robot Image">
+        </div-->
+        <div id="chat-container">
+            <div id="chat">
+                <div id="question-display-box" class="question"></div>
+                <!-- Additional questions and answers can be dynamically added here -->
+            </div>
+            <div class='btns'>
+                <button id="next-question" onclick="next_question()" style="display: none;">Submit Question</button>
+                <button id="interview-submit" style="display:none" onclick="submit_interview()">Final Submit</button>
+                <button id="start-interview" onclick="start_interview()">Start Interview</button>
+            </div>
+        </div>
+        
+    </main>
 
-    <button id="startRecordingButton">Start recording</button>
-    <button id="stopRecordingButton">Stop recording</button>
     
-
-    <div id="video-container">
-        <video id="video" playsinline autoplay></video>
-        <button id="snapshot-btn">Take Snapshot</button>
-    </div>
-
-    <div>
-        <p id="question-display-box">Question here</p>
-
-    </div>
-    <button type="button" id="select-genre" onClick="select_topics_and_get_questions();" style="display:block;">Next</button>
-    <button type="button" id="start-interview" onClick="start_interview();" style="display:block;">Start Interview</button>
-    
-    <button type="button" id="next-ques" onClick="next_question();" style="display:block;">Next</button>
-    <button type="button" id="interview-submit" onclick = "submit_interview();" style="display:none;">Submit</button>
-
     <script>
         var server_url = '';
         var ques_index = -1;
         var interview_data = [];
         var questions = [];
 
-        var startRecordingButton = document.getElementById("startRecordingButton");
-        var stopRecordingButton = document.getElementById("stopRecordingButton");
         
 
         var leftchannel = [];
@@ -48,9 +155,6 @@
         var blob = null;
         var questions_num = 0;
 
-        startRecordingButton.addEventListener("click", function () {
-            start_recording();
-        });
         
         function start_recording(){
             
@@ -297,7 +401,9 @@
         function start_interview(){
             
             // on click remove the top layer of start interview
-
+            
+            document.querySelectorAll('#next-question')[0].style.display = 'block';
+            document.querySelectorAll('#start-interview')[0].style.display = 'none';
             // Set interval to call the function every 5 seconds
             let video_interval = setInterval(send_video_snap, 5000);
             
@@ -361,6 +467,7 @@
         }
     
     
+        select_topics_and_get_questions();
     </script>
 </body>
 </html>

@@ -21,14 +21,15 @@
         <p id="question-display-box">Question here</p>
 
     </div>
-    <button type="button" id="start-interview" onClick="" style="display:block;">Start Interview</button>
+    <button type="button" id="select-genre" onClick="select_topics_and_get_questions();" style="display:block;">Next</button>
+    <button type="button" id="start-interview" onClick="start_interview();" style="display:block;">Start Interview</button>
     
-    <button type="button" id="next" onClick="" style="display:block;">Next</button>
-    <button type="button" id="interview-submit" style="display:none;">Submit</button>
+    <button type="button" id="next-ques" onClick="next_question();" style="display:block;">Next</button>
+    <button type="button" id="interview-submit" onclick = "submit_interview();" style="display:none;">Submit</button>
 
     <script>
         var server_url = '';
-        var ques_index = 0;
+        var ques_index = -1;
         var interview_data = [];
         var questions = [];
 
@@ -232,8 +233,9 @@
                 .then(response => response.json())
                 .then(data => 
                 {
+                    console.log(data);
                     if(data){
-                        if(data['confidence']){
+                        if(data['confidence'] != null || data['confidence'] != undefined){
                             if(interview_data[ques_index]){
                                 interview_data[ques_index]['video_confidence'].push(data.confidence);
                             }
@@ -260,17 +262,19 @@
         function init_question(q_index){
             
             interview_data[q_index] = {
-                "question" : questions[q_index],
+                "question" : questions[q_index]['question'],
                 "video_confidence" : [],
                 "transcription" : ""
             };
             
 
             // show the question using inner html
+            document.querySelectorAll('#question-display-box')[0].innerHTML = questions[q_index]['question'];
         }
 
         function next_question(){
             if(ques_index < questions_num-1){
+                // so that recording is not send for 0th ques
                 if(ques_index != -1){
                     send_recording(ques_index);
                 }
@@ -283,6 +287,9 @@
             }
             if(ques_index >= questions_num-1){
                 //hide next button and show submit button
+                document.querySelectorAll('#next-ques')[0].style.display = 'none';
+                document.querySelectorAll('#next-ques')[0].disable = true;
+                document.querySelectorAll('#interview-submit')[0].style.display = 'block';
             }
 
         }
@@ -294,13 +301,13 @@
             // Set interval to call the function every 5 seconds
             let video_interval = setInterval(send_video_snap, 5000);
             
-
+            next_question();
         }
 
         function select_topics_and_get_questions(){
             // pass topic in below function
             fetch_questions('DSA');
-
+            
             ///  chnage screen to a page showing a start interview page
 
         }
@@ -311,7 +318,7 @@
                 'topic':topic
             };
 
-        fetch(server_url+'/get_questions', {
+        fetch(server_url+'/api/get_questions', {
             method: 'POST', 
             headers: {
                 'Content-Type': 'application/json', // Specify content type as JSON
@@ -321,14 +328,39 @@
             .then(response => response.json())
             .then(data => {
                 console.log(data);
-                questions = data;
-                questions_num = questions.length;
+                questions = data['questions'];
+                questions_num = data['questions'].length;
             })
             .catch(error => {
                 console.error('Error getting questions:', error);
             });
 
         }
+    
+        
+        function submit_interview(){
+            var payload = interview_data;
+
+        fetch(server_url+'/api/submit_interview', {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json', // Specify content type as JSON
+            },
+            body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                questions = data['questions'];
+                questions_num = data['questions'].length;
+            })
+            .catch(error => {
+                console.error('Error getting questions:', error);
+            });
+
+        }
+    
+    
     </script>
 </body>
 </html>

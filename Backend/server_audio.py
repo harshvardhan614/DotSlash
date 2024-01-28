@@ -189,8 +189,7 @@ def submit_interview():
         )
         
         #Operation on Messeges
-        data________________ = 1
-        print(completion.choices[0].message)
+        return jsonify({'questions': "Submitted"})
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
