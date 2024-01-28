@@ -165,7 +165,15 @@
 
         
         function start_recording(){
-            
+            leftchannel = [];
+            rightchannel = [];
+            recorder = null;
+             recordingLength = 0;
+             volume = null;
+             mediaStream = null;
+             sampleRate = 44100;
+             context = null;
+             blob = null;
             // Initialize recorder
             navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
             navigator.getUserMedia(
