@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, session, redirect, url_for
+from flask import Flask, jsonify, request, session, redirect, url_for, render_template
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 from pymongo import MongoClient
@@ -7,6 +7,11 @@ from pymongo.server_api import ServerApi
 from bson import ObjectId
 from openai import OpenAI
 import os
+import speech_recognition as sr
+import azure.cognitiveservices.speech as speechsdk
+from io import BytesIO
+import subprocess
+from datetime import datetime
 
 
 app = Flask(__name__)
@@ -34,20 +39,9 @@ try:
 except Exception as e:
     print(e)
 
-client = OpenAI()
-
-print(client)
-completion = client.chat.completions.create(
-  model="gpt-3.5-turbo",
-  messages=[
-    {"role": "system", "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."},
-    {"role": "user", "content": "Compose a poem that explains the concept of recursion in programming."}
-  ]
-)
-
-print(completion.choices[0].message)
 
 
-# from .routes import *
+
+from .routes import *
 
 
