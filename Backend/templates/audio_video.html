@@ -18,7 +18,7 @@
     </div>
 
     <script>
-
+        var server_url = '';
         var ques_index = 0;
         var interview_data = [];
         var questions = [];
@@ -146,7 +146,7 @@
         //formData.append('audio', audioBlob, 'recording.ogg');
        
         console.log(formData);
-        fetch('/transcribe', {
+        fetch(server_url+'/transcribe', {
           method: 'POST',
           body: formData
         })
@@ -222,7 +222,7 @@
                 formData.append('snapshot', blob, 'snapshot.png');
 
                 // Send snapshot to backend using FormData
-                fetch('/snapshot', {
+                fetch(server_url+'/snapshot', {
                     method: 'POST',
                     body: formData,
                 })
