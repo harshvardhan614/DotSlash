@@ -475,8 +475,14 @@
 
         }
     
-    
-        select_topics_and_get_questions();
+        
+        var urlParams = new URLSearchParams(window.location.search);
+
+        // Retrieve specific parameters
+        var param1Value = urlParams.get('mainOption');
+
+        //select_topics_and_get_questions();
+        fetch_questions(param1Value);
     </script>
 </body>
 </html>

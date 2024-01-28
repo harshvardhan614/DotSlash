@@ -8,7 +8,7 @@ from openai import OpenAI
 import json
 
 
-openAiclient = OpenAI(api_key = "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")
+openAiclient = OpenAI(api_key = "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")
 
 from google.cloud import vision_v1
 from google.cloud.vision_v1 import types
@@ -25,7 +25,7 @@ recognizer = sr.Recognizer()
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("data_entry.html")
 
 
 @app.route("/audio")
@@ -159,7 +159,7 @@ def get_questions():
         model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are an Interviewer's assistant, suggest the Interviewer 20 Technical Questions along with their deficulty level from Easy, Medium and Hard in JSON format based on the topic he gives you"},
-            {"role": "user", "content": "Data Structures"}
+            {"role": "user", "content": data['topic']}
         ]
         )
         
