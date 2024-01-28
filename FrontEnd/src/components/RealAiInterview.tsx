@@ -1,14 +1,14 @@
 /** @format */
 import BackHome from "./inerviewComponent/BackHome";
-import Interview from "./inerviewComponent/Interview";
+import Real from "./realInterview/Real";
 
-export default function Home() {
+export default function RealAiInterview() {
   
 
   return (
     <>
      <BackHome/>
-      <Interview/>
+     <Real/>
     </>
   );
 }

@@ -1,6 +1,7 @@
 /** @format */
 // import Home from "@/components/Home";
 import Interview from "@/components/Interview";
+// import RealAiInterview from "@/components/RealAiInterview";
 
 export default function Master() {
   
@@ -9,6 +10,7 @@ export default function Master() {
     <>
       {/* <Home/> */}
       <Interview/>
+      {/* <RealAiInterview/> */}
     </>
   );
 }
