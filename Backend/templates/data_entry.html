@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Form with Dropdown</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .option-buttons {
+            margin-bottom: 20px;
+        }
+
+        select {
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        select:hover {
+            background-color: #45a049;
+        }
+
+        select:active {
+            background-color: #3e8e41;
+            transform: scale(0.95);
+        }
+
+        input[type="submit"] {
+            padding: 10px 15px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        input[type="submit"]:active {
+            background-color: #3e8e41;
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <form id="selectionForm" method="get" action="/submit">
+        <div class="option-buttons">
+            <select name="mainOption" onchange="showSubOptions(this.value)">
+                <option value="" disabled selected>Select an option</option>
+                <option value="subOption1">Option 1</option>
+                <option value="subOption2">Option 2</option>
+            </select>
+        </div>
+
+        <div class="sub-options" id="subOption1">
+            <select name="selectedOption">
+                <option value="Sub-Option 1A">Sub-Option 1A</option>
+                <option value="Sub-Option 1B">Sub-Option 1B</option>
+            </select>
+        </div>
+
+        <div class="sub-options" id="subOption2">
+            <select name="selectedOption">
+                
+                <option value="Sub-Option 2A">Sub-Option 2A</option>
+                <option value="Sub-Option 2B">Sub-Option 2B</option>
+            </select>
+        </div>
+
+        <input type="submit" value="Submit">
+    </form>
+</div>
+
+<script>
+    function showSubOptions(selectedOption) {
+        const subOptions1 = document.getElementById('subOption1');
+        const subOptions2 = document.getElementById('subOption2');
+
+        // Hide all sub-options
+        subOptions1.style.display = 'none';
+        subOptions2.style.display = 'none';
+
+        // Display the selected sub-options
+        const selectedSubOptions = document.getElementById(selectedOption);
+        selectedSubOptions.style.display = 'block';
+    }
+</script>
+
+</body>
+</html>

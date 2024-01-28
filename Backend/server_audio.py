@@ -1,27 +1,17 @@
 # app.py
 from flask import Flask, render_template, request, jsonify
 import speech_recognition as sr
-import azure.cognitiveservices.speech as speechsdk
-from io import BytesIO
-#import librosa
-#import soundfile as sf
-import subprocess
 from datetime import datetime
+import random
+import os
+from openai import OpenAI
 
+openAiclient = OpenAI(api_key = "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")
 
-def convert_webm_to_wav(input_file, output_file):
-    clip = moviepy.VideoFileClip(input_file,)
-    clip.audio.write_audiofile(output_file,ffmpeg_params=[
-  
-    '-vcodec', 'libvpx',
-    '-keyint_min', '60',
-    '-g', '60',
-    '-vb', '4000k',
-    '-f', 'webm',
-    '-cluster_size_limit', '10M',
-    '-cluster_time_limit', '2100',
-    # 'out.wav'
-])
+from google.cloud import vision_v1
+from google.cloud.vision_v1 import types
+credentials_path = "gcloud_key.json"
+client = vision_v1.ImageAnnotatorClient.from_service_account_file(credentials_path)
 
 
 
@@ -30,58 +20,73 @@ app = Flask(__name__)
 # Configure SpeechRecognition
 recognizer = sr.Recognizer()
 
-@app.route('/')
+
+@app.route("/")
 def index():
-    return render_template('index.html')
+    return render_template("data_entry.html")
 
-@app.route('/audio')
+@app.route("/submit", methods=['GET'])
+def submit():
+    data = request.form
+    print(f'Your submitted data is {data}')
+    return render_template("audio_video.html")
+
+@app.route("/audio")
 def audio():
-    return render_template('audio_test.html')
+    return render_template("audio_test.html")
 
-@app.route('/a')
+
+@app.route("/a")
 def a():
-    return render_template('audio.html')
+    return render_template("audio.html")
 
-@app.route('/transcribe', methods=['POST'])
+
+@app.route("/transcribe", methods=["POST"])
 def transcribe():
-    
-    if 'audio' not in request.files:
-        return jsonify({'error': 'No audio file provided'})
+    if "audio" not in request.files:
+        return jsonify({"error": "No audio file provided"})
 
-    
-    audio_file = request.files['audio']
-    #audio_data = audio_file.filename()
+    audio_file = request.files["audio"]
+    # audio_data = audio_file.filename()
     print(audio_file)
-    # audio_data = audio_file.read()  # Read the audio data directly
 
+    audio_filename = str(random.randint(1000, 999999))+ audio_file.filename
 
-    #audio_file.save('uploads/' + audio_file.filename)
-    print('uploads/' + audio_file.filename)
-    #return speech_to_text('uploads/' + audio_file.filename)
-    
-    audio_file.save('uploads/' + audio_file.filename)
-    # Replace 'input.webm' and 'output.wav' with your input and output file paths
-    
-    #convert_webm_to_wav('uploads/' + audio_file.filename, 'uploads/recording_new.wav')
+    # audio_file.save('uploads/' + audio_file.filename)
+    print("uploads/" + audio_filename)
+    # return speech_to_text('uploads/' + audio_file.filename)
 
-    #convert_ogg_to_wav('uploads/' + audio_file.filename, 'uploads/' + audio_file.filename+'new')
+    audio_file.save("uploads/" + audio_filename)
 
     # Convert the audio data to an AudioFile object
-    #with sr.AudioFile('uploads/' + audio_file.filename) as source:
-    with sr.AudioFile('uploads/'  + audio_file.filename) as source:
-        #pass
+    # with sr.AudioFile('uploads/' + audio_file.filename) as source:
+    with sr.AudioFile("uploads/" + audio_filename) as source:
+        # pass
         audio = recognizer.listen(source)
     try:
-        now  = datetime.now()
         print("Microsoft Azure Speech thinks you said ")
-        print(now.strftime("%H:%M:%S"))
-        print(recognizer.recognize_azure(audio, key="ba8f1c341b5b45c58ac0253ee5be5342", location="eastus"))
-        now  = datetime.now()
-        print(now.strftime("%H:%M:%S"))
+
+        text_recognition = recognizer.recognize_azure(
+            audio, key="ba8f1c341b5b45c58ac0253ee5be5342", location="eastus"
+        )
+        os.remove('uploads/' + audio_filename)
+        return jsonify(
+            {"transcript": text_recognition[0], "confidence": text_recognition[1]}
+        )
+
     except sr.UnknownValueError:
-        print("Microsoft Azure Speech could not understand audio")
+        return jsonify({"error": "Microsoft Azure Speech could not understand audio"})
     except sr.RequestError as e:
-        print("Could not request results from Microsoft Azure Speech service; {0}".format(e))
+        return jsonify(
+            {
+                "error": "Could not request results from Microsoft Azure Speech service; {0}".format(
+                    e
+                )
+            }
+        )
+    
+    
+    """
     try:
         # Perform speech recognition
         transcript = recognizer.recognize_google(audio, language='en-US')
@@ -90,45 +95,108 @@ def transcribe():
         return jsonify({'error': 'Could not understand audio'})
     except sr.RequestError as e:
         return jsonify({'error': f'Speech recognition request failed: {e}'})
-    
+    """
+@app.route("/video")
+def video_main():
+    return render_template("video_snap.html")
 
-def speech_to_text(filename):
-    # Set up the Speech configuration
-    speech_config = speechsdk.SpeechConfig(subscription="bd6062c60f3c4b30bb5ec451a5439d1a", region="eastus")
+@app.route("/video_audio")
+def video_audio_main():
+    return render_template("audio_video.html")
 
-    # Create a speech recognizer
-    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
 
-    # Specify the audio file for recognition
-    audio_input = speechsdk.AudioConfig(filename=filename)
+@app.route('/snapshot', methods=['POST'])
+def snapshot():
+    snapshot_file = request.files['snapshot']
 
-    # Perform speech recognition
-    result = speech_recognizer.recognize_once(audio_config=audio_input)
-    
+    # Save the snapshot to a file or process it as needed
+    # For now, just print some information
+    print('Received snapshot:', snapshot_file.filename)
+
+    snap_file_name = 'uploads/images/'+str(random.randint(1000, 999999))+'received_snapshot.png'
+    snapshot_file.save(snap_file_name)
+
+    with open(snap_file_name, 'rb') as image_file:
+        content = image_file.read()
+
+    # Create an image object
+    image = types.Image(content=content)
+
+    # Perform facial detection
+    response = client.face_detection(image=image)
+    faces = response.face_annotations
+    os.remove(snap_file_name)
+    # Print emotion scores for each detected face
+    scores = {
+        'joy' : 0,
+        'sorrow' : 0,
+        'anger' : 0,
+        'surprise' : 0
+    }
+    if(len(faces) > 0):
+        face = faces[0]
+        scores = {
+            'joy' : face.joy_likelihood,
+            'sorrow' : face.sorrow_likelihood,
+            'anger' : face.anger_likelihood,
+            'surprise' : face.surprise_likelihood
+        }
+
+    confidence = (60*scores['joy']+15*scores['sorrow']+5*scores['anger']+20*scores['surprise'])
+    return jsonify({'message': 'Snapshot received successfully', 'confidence':confidence})
+
+
+
+@app.route('/api/get_questions', methods=['POST'])
+def get_questions():
+    try:
+        data = request.get_json()
+        print(f"Data is {data}")
         
+        #Data Operation
         
-    # Check the result
-    if result.reason == speechsdk.ResultReason.RecognizedSpeech:
-        print("Recognized: {}".format(result.text))
-    elif result.reason == speechsdk.ResultReason.NoMatch:
-        print("No speech could be recognized")
-    elif result.reason == speechsdk.ResultReason.Canceled:
-        cancellation_details = result.cancellation_details
-        print("Speech Recognition canceled: {}".format(cancellation_details.reason))
-        if cancellation_details.reason == speechsdk.CancellationReason.Error:
-            print("Error details: {}".format(cancellation_details.error_details))
+        completion = openAiclient.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are an Interviewer's assistant, suggest the Interviewer 20 Technical Questions along with their deficulty level from Easy, Medium and Hard in JSON format based on the topic he gives you"},
+            {"role": "user", "content": "Data Structures"}
+        ]
+        )
+        
 
-def ap():
-    speech_key, service_region = "bd6062c60f3c4b30bb5ec451a5439d1a", "eastus"
-    speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
+        print(completion.choices[0].message.content.questions)
+        return jsonify({'questions': completion.choices[0].message.content.questions})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-    audio_config = speechsdk.audio.AudioConfig(filename='uploads/recording.wav')
-    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
-    result = speech_recognizer.recognize_once()
-    print(result.text)
-    
 
-#ap()
-    
-if __name__ == '__main__':
+@app.route('/api/submit_interview', methods=['POST'])
+def submit_interview():
+    try:
+        data = request.get_json()
+        print('Data for submit interview is {data}')
+        
+        #Save data to backend
+        
+        completion = openAiclient.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are an Interviewer's assistant, suggest the Interviewer 20 Technical Questions along with their deficulty level from Easy, Medium and Hard in JSON format based on the topic he gives you"},
+            {"role": "user", "content": "Data Structures"}
+        ]
+        )
+        
+        #Operation on Messeges
+        data________________ = 1
+        print(completion.choices[0].message)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+#AIzaSyB6LSsfuGz8scQPjTLVMWhwZLXGrEGG8do
+
+
+if __name__ == "__main__":
     app.run(debug=True)
