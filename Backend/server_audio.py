@@ -134,7 +134,8 @@ def snapshot():
             'surprise' : face.surprise_likelihood
         }
 
-    return jsonify({'message': 'Snapshot received successfully', 'scores':scores})
+        confidence = (60*scores['joy']+15*scores['sorrow']+5*scores['anger']+20*scores['surprise'])
+    return jsonify({'message': 'Snapshot received successfully', 'confidence':confidence})
 
 
 
