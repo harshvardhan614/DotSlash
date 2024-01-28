@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+        }
+
+        header {
+            background-color: #3498db;
+            padding: 10px;
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            width: 100%;
+        }
+
+        main {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin: 20px;
+            width: 100%;
+        }
+
+        #video-container {
+            width: 30%;
+            max-width: 500px;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        #robot-image {
+            width: 200px;
+            height: 200px;
+            margin-top: 20px;
+        }
+
+        #chat-container {
+            width: 60%;
+            max-width: 500px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            box-sizing: border-box;
+        }
+
+        .question {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .answer {
+            margin-bottom: 20px;
+        }
+
+        @media only screen and (max-width: 768px) {
+            main {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #video-container, #chat-container {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        Chatbot Interface
+    </header>
+    <main>
+        <div id="video-container">
+            <video id="user-video" playsinline autoplay muted></video>
+        </div>
+        <!--div id="robot-image">
+            <img src="robot-image.jpg" alt="Robot Image">
+        </div-->
+        <div id="chat-container">
+            <div class="question">Robot: How can I help you today?</div>
+            <div class="answer">User: Please ask me a question.</div>
+            <!-- Additional questions and answers can be dynamically added here -->
+        </div>
+    </main>
+
+    <script>
+        // JavaScript code for accessing the user's camera and displaying it in the video element
+        const video = document.getElementById('user-video');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                video.srcObject = stream;
+            })
+            .catch((error) => {
+                console.error('Error accessing the camera: ', error);
+            });
+    </script>
+</body>
+</html>

@@ -4,6 +4,9 @@ import speech_recognition as sr
 from datetime import datetime
 import random
 import os
+from openai import OpenAI
+
+openAiclient = OpenAI(api_key = "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")
 
 from google.cloud import vision_v1
 from google.cloud.vision_v1 import types
@@ -137,6 +140,53 @@ def snapshot():
     confidence = (60*scores['joy']+15*scores['sorrow']+5*scores['anger']+20*scores['surprise'])
     return jsonify({'message': 'Snapshot received successfully', 'confidence':confidence})
 
+
+
+@app.route('/api/get_questions', methods=['POST'])
+def get_questions():
+    try:
+        data = request.get_json()
+        print(f"Data is {data}")
+        #Data Operation
+        
+        completion = openAiclient.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are an Interviewer's assistant, suggest the Interviewer 20 Technical Questions along with their deficulty level from Easy, Medium and Hard in JSON format based on the topic he gives you"},
+            {"role": "user", "content": "Data Structures"}
+        ]
+        )
+        
+
+        print(completion.choices[0].message.content.questions)
+        return jsonify({'questions': completion.choices[0].message.content.questions})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/submit_interview', methods=['POST'])
+def submit_interview():
+    try:
+        data = request.get_json()
+        print('Data for submit interview is {data}')
+        
+        #Save data to backend
+        
+        completion = openAiclient.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are an Interviewer's assistant, suggest the Interviewer 20 Technical Questions along with their deficulty level from Easy, Medium and Hard in JSON format based on the topic he gives you"},
+            {"role": "user", "content": "Data Structures"}
+        ]
+        )
+        
+        #Operation on Messeges
+        data________________ = 1
+        print(completion.choices[0].message)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 #AIzaSyB6LSsfuGz8scQPjTLVMWhwZLXGrEGG8do

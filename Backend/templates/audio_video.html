@@ -227,13 +227,25 @@
                     body: formData,
                 })
                 .then(response => response.json())
-                .then(data => console.log(data))
+                .then(data => 
+                {
+                    if(data){
+                        if(data['confidence']){
+                            if(interview_data[ques_index]){
+                                interview_data[ques_index]['video_confidence'].push(data.confidence);
+                            }
+                            
+                        }
+                    }                    
+                    
+                }
+                )
                 .catch(error => console.error('Error sending snapshot:', error));
             }, 'image/png');
         }
 
 
-        const video_interval = setInterval(send_video_snap, 5000);
+        let video_interval;
         
         // main code
 
@@ -245,27 +257,66 @@
         function init_question(q_index){
 
             interview_data[q_index] = {
+                "question" : questions[q_index]
                 "video_confidence" : [],
                 "transcription" : ""
             };
+            
 
+            // show the question using inner html
         }
 
         function next_question(){
             
+
             ques_index+=1;
 
             init_question(ques_index);
-
+            
 
         }
 
         function start_interview(){
+            
+            // on click remove the top layer of start interview
 
             // Set interval to call the function every 5 seconds
-            const video_interval = setInterval(myFunction, 5000);
+            let video_interval = setInterval(send_video_snap, 5000);
             
+
+        }
+
+        function select_topics_and_get_questions(){
+            // pass topic in below function
+            fetch_questions('DSA');
+
+            ///  chnage screen to a page showing a start interview page
+
+        }
+
+
+        function fetch_questions(topic){
+            var payload = {
+                'topic':topic
+            };
+
+        fetch(server_url+'/get_questions', {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json', // Specify content type as JSON
+            },
+            body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                questions = data;
             
+            })
+            .catch(error => {
+                console.error('Error getting questions:', error);
+            });
+
         }
     </script>
 </body>
