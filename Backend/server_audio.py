@@ -5,6 +5,13 @@ from datetime import datetime
 import random
 import os
 
+from google.cloud import vision_v1
+from google.cloud.vision_v1 import types
+credentials_path = "gcloud_key.json"
+client = vision_v1.ImageAnnotatorClient.from_service_account_file(credentials_path)
+
+
+
 app = Flask(__name__)
 
 # Configure SpeechRecognition
@@ -97,9 +104,41 @@ def snapshot():
     # Save the snapshot to a file or process it as needed
     # For now, just print some information
     print('Received snapshot:', snapshot_file.filename)
-    snapshot_file.save('uploads/images/received_snapshot.png')
 
-    return jsonify({'message': 'Snapshot received successfully'})
+    snap_file_name = 'uploads/images/received_snapshot.png'
+    snapshot_file.save(snap_file_name)
+
+    with open(snap_file_name, 'rb') as image_file:
+        content = image_file.read()
+
+    # Create an image object
+    image = types.Image(content=content)
+
+    # Perform facial detection
+    response = client.face_detection(image=image)
+    faces = response.face_annotations
+
+    # Print emotion scores for each detected face
+    scores = {
+        'joy' : 0,
+        'sorrow' : 0,
+        'anger' : 0,
+        'surprise' : 0
+    }
+    if(len(faces) > 0):
+        face = faces[0]
+        scores = {
+            'joy' : face.joy_likelihood,
+            'sorrow' : face.sorrow_likelihood,
+            'anger' : face.anger_likelihood,
+            'surprise' : face.surprise_likelihood
+        }
+
+    return jsonify({'message': 'Snapshot received successfully', 'scores':scores})
+
+
+
+#AIzaSyB6LSsfuGz8scQPjTLVMWhwZLXGrEGG8do
 
 
 if __name__ == "__main__":

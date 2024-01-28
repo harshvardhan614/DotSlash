@@ -1,0 +1,13 @@
+{
+    "type": "service_account",
+    "project_id": "majestic-camp-412623",
+    "private_key_id": "49b95660d0b6f552c69d583857ebf7b0050e1bc2",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQClPo2nr5k38jNs\n6l536khLzYVD2iYbMPBfy63GVAR1w3cu/DDbjyMdZ7tirBogNQR8FL7WrAS5l3ir\n4RgY8tpTDlken7sox+J48Eq9SIOoJQFd+zLINjLPaQt1YNTBfjzk3UH1140e7xpQ\niSFCPxUg1zn5IdOs6mpuMs3QUNk8Ry+4J/PKLeBr1u5kGt9rJ7+SdHewFzBA2Gk6\ne1ACHKlMJ02km89NUUukhCA5i4QwBU8vffEkzasi816bnJGyKFidSJLY5YrbBqJu\ns+UJe2so5xilsaf/R+Ph84JO7j+Jtcf7qYEeLzZYLArvKQr7F8ujKsu84QaIbm8n\n0FgIa/8zAgMBAAECggEADc37AY4+65iVST0PJU9yOLrzriZ0VoMxIZ+fZdkxAjGR\nLGCvKDh+A3/d/LFKAXTMah1FkCOQxXxs/Vbxr2viZ1vkgBVyCkcgmV/hrox3Sz3E\nLnjE1ksI1aD97xFm1L9aEPiXARW/2Vy6Qw4htCoW9sZkNnbn+yMePxSJcyS98TYS\nyMMDp+NJXKDxxu2VoEDUFuAzxooveo/Mc8J3d+sT9L6oYOrSMDYxIVtLL/2z7WQs\nIXCTn/I7R4p9ti51bKq2yynYW8SHj91qgNdHKCe6cv66Ka+hkmxKPc2t1ICNy77+\n8hDZKWJWsErP6FEDxf2BJ6hY1sSwgwoIlQZ3v4x2mQKBgQDcezOvEBHdZoZ0sDhZ\n4c1LcpeL7zBXoscael78C3qytCBA8fVDH25IZZGhQeUTjiEoHs68qkK7IKKKMZeJ\nu+rjdOXRX+DrwBr+3ektwz3d7HjAH4klXb7vUfMaIAJ/BwirX3bPqKk9VWzfPmFY\nNGS0ylAKUeDD/GBf9uUx9fHjnQKBgQC/3Vfv3aXvqrrUsx6sWm8O0FBh+EPY0Pld\n67FhvTA0+jDMeOUmzm+ZFGCt2jKfzopaVH9GaMgKKEtA9GpTzCbCLIRxoNB4juGd\nkYza7jNUiBPEp+1Zb0bO9vdmWeuZCF33A4r2LrVVy7xnETLdC4+j0JoE7l3DSNaT\nR5gGCsx9DwKBgH/tlF19S4BVHqrSHMA6Pi4KvVfaXwhaUIBShI5l8rmBvj0wpwhd\nUlX7aPZSD6K7Ew3+YiIiADong2f/wleOi4mSqE5F/XGMs50yETwWTu1XafC/24ms\nzT57JD0CWbBu2l7lM0DmMdx+ln8p6L2PGOe1g5+ZRnsxEpJb5TyJ4eIZAoGAZhZp\nLukZ3N9UD87K+FwaEaDH1Ikb2KbAuLerJ11Z5CZnhrShATgAa0xLcNXT7/Ie7Zde\nLWGdZsIv4Hzsgm/zA4haZHdz1WH5LDUA5JCv4T+SfSX5BYhO/dqsotofoMqx7LgG\n3ZzWwbLpKVIeZT08jaZ1/T+zxi/gdHc4raZbTgMCgYEA0z68xOGcCrhC5lNQ00MK\nv71M4tJjA+v5jxJ3Vr77uFT2KSc+vE+SpF2BeQkWT51pDVBFMjrZBOBT6ANHyrKx\n655+22RhcGUDJNJ1i+VKpGo2q2jnOaiIAGATmuraxviLF5T2Djk9YzKuQn62Wf5E\nNiuY20mxTbyFOU8TkBOn/so=\n-----END PRIVATE KEY-----\n",
+    "client_email": "harsh-api@majestic-camp-412623.iam.gserviceaccount.com",
+    "client_id": "114149194613343383147",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/harsh-api%40majestic-camp-412623.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+    }
