@@ -462,6 +462,14 @@
     
         
         function submit_interview(){
+            for(var i=0; i<interview_data.length; i++){
+                var confsum = 0;
+                var leng_video = interview_data[i]['video_confidence'].length;
+                for(var j=0; j<leng_video; j++){
+                    confsum+=interview_data[i]['video_confidence'][j];
+                }
+                interview_data[i]['video_confidence'] = (confsum/leng_video);
+            }
             var payload = interview_data;
 
         fetch(server_url+'/api/submit_interview', {
