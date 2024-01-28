@@ -105,7 +105,7 @@ def snapshot():
     # For now, just print some information
     print('Received snapshot:', snapshot_file.filename)
 
-    snap_file_name = 'uploads/images/received_snapshot.png'
+    snap_file_name = 'uploads/images/'+str(random.randint(1000, 999999))+'received_snapshot.png'
     snapshot_file.save(snap_file_name)
 
     with open(snap_file_name, 'rb') as image_file:
@@ -117,7 +117,7 @@ def snapshot():
     # Perform facial detection
     response = client.face_detection(image=image)
     faces = response.face_annotations
-
+    os.remove(snap_file_name)
     # Print emotion scores for each detected face
     scores = {
         'joy' : 0,
@@ -134,7 +134,7 @@ def snapshot():
             'surprise' : face.surprise_likelihood
         }
 
-        confidence = (60*scores['joy']+15*scores['sorrow']+5*scores['anger']+20*scores['surprise'])
+    confidence = (60*scores['joy']+15*scores['sorrow']+5*scores['anger']+20*scores['surprise'])
     return jsonify({'message': 'Snapshot received successfully', 'confidence':confidence})
 
 
