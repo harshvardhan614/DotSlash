@@ -5,6 +5,8 @@ from datetime import datetime
 import random
 import os
 from openai import OpenAI
+import json
+
 
 openAiclient = OpenAI(api_key = "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")
 
@@ -40,7 +42,11 @@ def a():
 def transcribe():
     if "audio" not in request.files:
         return jsonify({"error": "No audio file provided"})
+    
+    if "qno" not in request.form:
+        return jsonify({"error": "No qno provided"})
 
+    qno = request.form.get('qno')
     audio_file = request.files["audio"]
     # audio_data = audio_file.filename()
     print(audio_file)
@@ -66,7 +72,7 @@ def transcribe():
         )
         os.remove('uploads/' + audio_filename)
         return jsonify(
-            {"transcript": text_recognition[0], "confidence": text_recognition[1]}
+            {"transcript": text_recognition[0], "confidence": text_recognition[1], "qno":qno}
         )
 
     except sr.UnknownValueError:
@@ -158,8 +164,9 @@ def get_questions():
         )
         
 
-        print(completion.choices[0].message.content.questions)
-        return jsonify({'questions': completion.choices[0].message.content.questions})
+        print(completion.choices[0].message.content)
+        ques = json.loads(completion.choices[0].message.content)
+        return jsonify({'questions': ques['questions']})
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500

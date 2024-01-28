@@ -1,119 +1,334 @@
 <!DOCTYPE html>
-<html lang="en">
+
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f5f5f5;
-        }
-
-        header {
-            background-color: #3498db;
-            padding: 10px;
-            text-align: center;
-            color: white;
-            font-size: 24px;
-            width: 100%;
-        }
-
-        main {
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            margin: 20px;
-            width: 100%;
-        }
-
-        #video-container {
-            width: 30%;
-            max-width: 500px;
-            overflow: hidden;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-
-        video {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        #robot-image {
-            width: 200px;
-            height: 200px;
-            margin-top: 20px;
-        }
-
-        #chat-container {
-            width: 60%;
-            max-width: 500px;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-            box-sizing: border-box;
-        }
-
-        .question {
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        .answer {
-            margin-bottom: 20px;
-        }
-
-        @media only screen and (max-width: 768px) {
-            main {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            #video-container, #chat-container {
-                width: 100%;
-                margin-bottom: 20px;
-            }
-        }
-    </style>
+    <meta charset="utf-8" />
+    <title></title>
 </head>
 <body>
-    <header>
-        Chatbot Interface
-    </header>
-    <main>
-        <div id="video-container">
-            <video id="user-video" playsinline autoplay muted></video>
-        </div>
-        <!--div id="robot-image">
-            <img src="robot-image.jpg" alt="Robot Image">
-        </div-->
-        <div id="chat-container">
-            <div class="question">Robot: How can I help you today?</div>
-            <div class="answer">User: Please ask me a question.</div>
-            <!-- Additional questions and answers can be dynamically added here -->
-        </div>
-    </main>
+    <h1>Audio</h1>
+
+    <button id="startRecordingButton">Start recording</button>
+    <button id="stopRecordingButton">Stop recording</button>
+    
+
+    <div id="video-container">
+        <video id="video" playsinline autoplay></video>
+        <button id="snapshot-btn">Take Snapshot</button>
+    </div>
+
+    <div>
+        <p id="question-display-box">Question here</p>
+
+    </div>
+    <button type="button" id="start-interview" onClick="" style="display:block;">Start Interview</button>
+    
+    <button type="button" id="next" onClick="" style="display:block;">Next</button>
+    <button type="button" id="interview-submit" style="display:none;">Submit</button>
 
     <script>
-        // JavaScript code for accessing the user's camera and displaying it in the video element
-        const video = document.getElementById('user-video');
+        var server_url = '';
+        var ques_index = 0;
+        var interview_data = [];
+        var questions = [];
 
+        var startRecordingButton = document.getElementById("startRecordingButton");
+        var stopRecordingButton = document.getElementById("stopRecordingButton");
+        
+
+        var leftchannel = [];
+        var rightchannel = [];
+        var recorder = null;
+        var recordingLength = 0;
+        var volume = null;
+        var mediaStream = null;
+        var sampleRate = 44100;
+        var context = null;
+        var blob = null;
+        var questions_num = 0;
+
+        startRecordingButton.addEventListener("click", function () {
+            start_recording();
+        });
+        
+        function start_recording(){
+            
+            // Initialize recorder
+            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+            navigator.getUserMedia(
+            {
+                audio: true
+            },
+            function (e) {
+                console.log("user consent");
+
+                // creates the audio context
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                context = new AudioContext();
+
+                // creates an audio node from the microphone incoming stream
+                mediaStream = context.createMediaStreamSource(e);
+
+                // https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/createScriptProcessor
+                // bufferSize: the onaudioprocess event is called when the buffer is full
+                var bufferSize = 2048;
+                var numberOfInputChannels = 2;
+                var numberOfOutputChannels = 2;
+                if (context.createScriptProcessor) {
+                    recorder = context.createScriptProcessor(bufferSize, numberOfInputChannels, numberOfOutputChannels);
+                } else {
+                    recorder = context.createJavaScriptNode(bufferSize, numberOfInputChannels, numberOfOutputChannels);
+                }
+
+                recorder.onaudioprocess = function (e) {
+                    leftchannel.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+                    rightchannel.push(new Float32Array(e.inputBuffer.getChannelData(1)));
+                    recordingLength += bufferSize;
+                }
+
+                // we connect the recorder
+                mediaStream.connect(recorder);
+                recorder.connect(context.destination);
+            },
+                        function (e) {
+                            console.error(e);
+                        });
+                    }
+        
+                    
+
+        function send_recording(qno){
+            // stop recording
+            recorder.disconnect(context.destination);
+            mediaStream.disconnect(recorder);
+
+            // we flat the left and right channels down
+            // Float32Array[] => Float32Array
+            var leftBuffer = flattenArray(leftchannel, recordingLength);
+            var rightBuffer = flattenArray(rightchannel, recordingLength);
+            // we interleave both channels together
+            // [left[0],right[0],left[1],right[1],...]
+            var interleaved = interleave(leftBuffer, rightBuffer);
+
+            // we create our wav file
+            var buffer = new ArrayBuffer(44 + interleaved.length * 2);
+            var view = new DataView(buffer);
+
+            // RIFF chunk descriptor
+            writeUTFBytes(view, 0, 'RIFF');
+            view.setUint32(4, 44 + interleaved.length * 2, true);
+            writeUTFBytes(view, 8, 'WAVE');
+            // FMT sub-chunk
+            writeUTFBytes(view, 12, 'fmt ');
+            view.setUint32(16, 16, true); // chunkSize
+            view.setUint16(20, 1, true); // wFormatTag
+            view.setUint16(22, 2, true); // wChannels: stereo (2 channels)
+            view.setUint32(24, sampleRate, true); // dwSamplesPerSec
+            view.setUint32(28, sampleRate * 4, true); // dwAvgBytesPerSec
+            view.setUint16(32, 4, true); // wBlockAlign
+            view.setUint16(34, 16, true); // wBitsPerSample
+            // data sub-chunk
+            writeUTFBytes(view, 36, 'data');
+            view.setUint32(40, interleaved.length * 2, true);
+
+            // write the PCM samples
+            var index = 44;
+            var volume = 1;
+            for (var i = 0; i < interleaved.length; i++) {
+                view.setInt16(index, interleaved[i] * (0x7FFF * volume), true);
+                index += 2;
+            }
+
+            // our final blob
+            blob = new Blob([view], { type: 'audio/wav' });
+            
+            send_audio_for_transcription(blob, qno);
+    }
+        
+    function send_audio_for_transcription(blob, qno){
+        const formData = new FormData();
+        formData.append('audio', blob, 'recording.webm');
+        formData.append('qno', qno);
+        //formData.append('audio', audioBlob, 'recording.ogg');
+       
+        console.log(formData);
+        fetch(server_url+'/transcribe', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Audio uploaded successfully:', data);
+
+          interview_data[parseInt(data['qno'])]['transcription'] = data['transcript'];
+        })
+        .catch(error => {
+          console.error('Error uploading audio:', error);
+        });
+    }
+        
+        function flattenArray(channelBuffer, recordingLength) {
+            var result = new Float32Array(recordingLength);
+            var offset = 0;
+            for (var i = 0; i < channelBuffer.length; i++) {
+                var buffer = channelBuffer[i];
+                result.set(buffer, offset);
+                offset += buffer.length;
+            }
+            return result;
+        }
+
+        function interleave(leftChannel, rightChannel) {
+            var length = leftChannel.length + rightChannel.length;
+            var result = new Float32Array(length);
+
+            var inputIndex = 0;
+
+            for (var index = 0; index < length;) {
+                result[index++] = leftChannel[inputIndex];
+                result[index++] = rightChannel[inputIndex];
+                inputIndex++;
+            }
+            return result;
+        }
+
+        function writeUTFBytes(view, offset, string) {
+            for (var i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+
+        // video starts from here
+        const video = document.getElementById('video');
+        const snapshotBtn = document.getElementById('snapshot-btn');
+
+        // Get user media
         navigator.mediaDevices.getUserMedia({ video: true })
             .then((stream) => {
                 video.srcObject = stream;
             })
             .catch((error) => {
-                console.error('Error accessing the camera: ', error);
+                console.error('Error accessing webcam:', error);
             });
+
+                
+        function send_video_snap(){
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob((blob) => {
+                const formData = new FormData();
+                formData.append('snapshot', blob, 'snapshot.png');
+
+                // Send snapshot to backend using FormData
+                fetch(server_url+'/snapshot', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => 
+                {
+                    if(data){
+                        if(data['confidence']){
+                            if(interview_data[ques_index]){
+                                interview_data[ques_index]['video_confidence'].push(data.confidence);
+                            }
+                            
+                        }
+                    }                    
+                    
+                }
+                )
+                .catch(error => console.error('Error sending snapshot:', error));
+            }, 'image/png');
+        }
+
+
+        let video_interval;
+        
+        // main code
+
+        // Function to terminate the interval after 15 seconds
+        function stopVideoSnapshotsInterval() {
+            clearInterval(video_interval);
+        }
+        
+        function init_question(q_index){
+            
+            interview_data[q_index] = {
+                "question" : questions[q_index],
+                "video_confidence" : [],
+                "transcription" : ""
+            };
+            
+
+            // show the question using inner html
+        }
+
+        function next_question(){
+            if(ques_index < questions_num-1){
+                if(ques_index != -1){
+                    send_recording(ques_index);
+                }
+                start_recording();
+                
+
+                ques_index+=1;
+
+                init_question(ques_index);
+            }
+            if(ques_index >= questions_num-1){
+                //hide next button and show submit button
+            }
+
+        }
+
+        function start_interview(){
+            
+            // on click remove the top layer of start interview
+
+            // Set interval to call the function every 5 seconds
+            let video_interval = setInterval(send_video_snap, 5000);
+            
+
+        }
+
+        function select_topics_and_get_questions(){
+            // pass topic in below function
+            fetch_questions('DSA');
+
+            ///  chnage screen to a page showing a start interview page
+
+        }
+
+
+        function fetch_questions(topic){
+            var payload = {
+                'topic':topic
+            };
+
+        fetch(server_url+'/get_questions', {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json', // Specify content type as JSON
+            },
+            body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                questions = data;
+                questions_num = questions.length;
+            })
+            .catch(error => {
+                console.error('Error getting questions:', error);
+            });
+
+        }
     </script>
 </body>
 </html>
