@@ -1,0 +1,273 @@
+import { useEffect } from 'react';
+
+let quesIndex = 0;
+let interviewData = [];
+let questions = [];
+
+let startRecordingButton;
+let stopRecordingButton;
+let leftChannel = [];
+let rightChannel = [];
+let recorder = null;
+let recordingLength = 0;
+let volume = null;
+let mediaStream = null;
+let sampleRate = 44100;
+let context = null;
+let blob = null;
+let video;
+let snapshotBtn;
+let videoInterval;
+
+function initQuestion(qIndex) {
+  interviewData[qIndex] = {
+    videoConfidence: [],
+    transcription: "",
+  };
+}
+
+function flattenArray(channelBuffer, recordingLength) {
+  var result = new Float32Array(recordingLength);
+  var offset = 0;
+  for (var i = 0; i < channelBuffer.length; i++) {
+    var buffer = channelBuffer[i];
+    result.set(buffer, offset);
+    offset += buffer.length;
+  }
+  return result;
+}
+
+function interleave(leftChannel, rightChannel) {
+  var length = leftChannel.length + rightChannel.length;
+  var result = new Float32Array(length);
+
+  var inputIndex = 0;
+
+  for (var index = 0; index < length;) {
+    result[index++] = leftChannel[inputIndex];
+    result[index++] = rightChannel[inputIndex];
+    inputIndex++;
+  }
+  return result;
+}
+
+function writeUTFBytes(view, offset, string) {
+  for (var i = 0; i < string.length; i++) {
+    view.setUint8(offset + i, string.charCodeAt(i));
+  }
+}
+
+function startRecording() {
+  // Initialize recorder
+  navigator.getUserMedia = (
+    navigator.getUserMedia ||
+    navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia ||
+    navigator.msGetUserMedia
+  );
+
+  navigator.getUserMedia(
+    { audio: true },
+    function (e) {
+      console.log("user consent");
+
+      // creates the audio context
+      window.AudioContext = window.AudioContext || window.webkitAudioContext;
+      context = new AudioContext();
+
+      // creates an audio node from the microphone incoming stream
+      mediaStream = context.createMediaStreamSource(e);
+
+      // https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/createScriptProcessor
+      // bufferSize: the onaudioprocess event is called when the buffer is full
+      var bufferSize = 2048;
+      var numberOfInputChannels = 2;
+      var numberOfOutputChannels = 2;
+      if (context.createScriptProcessor) {
+        recorder = context.createScriptProcessor(bufferSize, numberOfInputChannels, numberOfOutputChannels);
+      } else {
+        recorder = context.createJavaScriptNode(bufferSize, numberOfInputChannels, numberOfOutputChannels);
+      }
+
+      recorder.onaudioprocess = function (e) {
+        leftChannel.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+        rightChannel.push(new Float32Array(e.inputBuffer.getChannelData(1)));
+        recordingLength += bufferSize;
+      };
+
+      // we connect the recorder
+      mediaStream.connect(recorder);
+      recorder.connect(context.destination);
+    },
+    function (e) {
+      console.error(e);
+    }
+  );
+}
+
+function stopRecording() {
+  sendRecording();
+}
+
+function sendRecording() {
+  // stop recording
+  recorder.disconnect(context.destination);
+  mediaStream.disconnect(recorder);
+
+  // we flat the left and right channels down
+  // Float32Array[] => Float32Array
+  var leftBuffer = flattenArray(leftChannel, recordingLength);
+  var rightBuffer = flattenArray(rightChannel, recordingLength);
+  // we interleave both channels together
+  // [left[0],right[0],left[1],right[1],...]
+  var interleaved = interleave(leftBuffer, rightBuffer);
+
+  // we create our wav file
+  var buffer = new ArrayBuffer(44 + interleaved.length * 2);
+  var view = new DataView(buffer);
+
+  // RIFF chunk descriptor
+  writeUTFBytes(view, 0, 'RIFF');
+  view.setUint32(4, 44 + interleaved.length * 2, true);
+  writeUTFBytes(view, 8, 'WAVE');
+  // FMT sub-chunk
+  writeUTFBytes(view, 12, 'fmt ');
+  view.setUint32(16, 16, true); // chunkSize
+  view.setUint16(20, 1, true); // wFormatTag
+  view.setUint16(22, 2, true); // wChannels: stereo (2 channels)
+  view.setUint32(24, sampleRate, true); // dwSamplesPerSec
+  view.setUint32(28, sampleRate * 4, true); // dwAvgBytesPerSec
+  view.setUint16(32, 4, true); // wBlockAlign
+  view.setUint16(34, 16, true); // wBitsPerSample
+  // data sub-chunk
+  writeUTFBytes(view, 36, 'data');
+  view.setUint32(40, interleaved.length * 2, true);
+
+  // write the PCM samples
+  var index = 44;
+  var volume = 1;
+  for (var i = 0; i < interleaved.length; i++) {
+    view.setInt16(index, interleaved[i] * (0x7FFF * volume), true);
+    index += 2;
+  }
+
+  // our final blob
+  blob = new Blob([view], { type: 'audio/wav' });
+
+  sendAudioForTranscription(blob);
+}
+
+function sendAudioForTranscription(blob) {
+  const formData = new FormData();
+  formData.append('audio', blob, 'recording.webm');
+  //formData.append('audio', audioBlob, 'recording.ogg');
+
+  console.log(formData);
+  fetch('/transcribe', {
+    method: 'POST',
+    body: formData,
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Audio uploaded successfully:', data);
+      // Assuming the server responds with the URL of the uploaded audio file
+      // audioPlayer.src = data.url;
+    })
+    .catch(error => {
+      console.error('Error uploading audio:', error);
+    });
+}
+
+function sendVideoSnap() {
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const context = canvas.getContext('2d');
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  canvas.toBlob((blob) => {
+    const formData = new FormData();
+    formData.append('snapshot', blob, 'snapshot.png');
+
+    // Send snapshot to backend using FormData
+    fetch('/snapshot', {
+      method: 'POST',
+      body: formData,
+    })
+      .then(response => response.json())
+      .then(data => console.log(data))
+      .catch(error => console.error('Error sending snapshot:', error));
+    }, 'image/png');
+}
+
+function startInterview() {
+  // Set interval to call the function every 5 seconds
+  videoInterval = setInterval(sendVideoSnap, 5000);
+}
+
+// Function to terminate the interval after 15 seconds
+function stopVideoSnapshotsInterval() {
+  clearInterval(videoInterval);
+}
+
+function initQuestion(qIndex) {
+  interviewData[qIndex] = {
+    videoConfidence: [],
+    transcription: "",
+  };
+}
+
+function nextQuestion() {
+  quesIndex += 1;
+  initQuestion(quesIndex);
+}
+
+// The main component
+export default function Home() {
+  useEffect(() => {
+    // Initialize global variables
+    startRecordingButton = document.getElementById("startRecordingButton");
+    stopRecordingButton = document.getElementById("stopRecordingButton");
+    video = document.getElementById('video');
+    snapshotBtn = document.getElementById('snapshot-btn');
+
+    // Set up event listeners
+    startRecordingButton.addEventListener("click", startRecording);
+    stopRecordingButton.addEventListener("click", stopRecording);
+    snapshotBtn.addEventListener('click', sendVideoSnap);
+
+    // Get user media for video
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then((stream) => {
+        video.srcObject = stream;
+      })
+      .catch((error) => {
+        console.error('Error accessing webcam:', error);
+      });
+
+    // Start the interview
+    startInterview();
+
+    // Clean up the interval after 15 seconds (15000 milliseconds)
+    setTimeout(stopVideoSnapshotsInterval, 15000);
+
+    // Clean up on component unmount
+    return () => {
+      stopVideoSnapshotsInterval();
+    };
+  }, []);
+
+  return (
+    <div>
+      <h1>Audio</h1>
+
+      <button id="startRecordingButton">Start recording</button>
+      <button id="stopRecordingButton">Stop recording</button>
+
+      <div id="video-container">
+        <video id="video" playsInline autoPlay></video>
+        <button id="snapshot-btn">Take Snapshot</button>
+      </div>
+    </div>
+  );
+}
